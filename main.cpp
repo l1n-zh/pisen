@@ -1,81 +1,82 @@
+#include <algorithm>
 #include <iostream>
+#include <math.h>
 #include <queue>
 #include <regex>
 #include <string.h>
 #include <unordered_map>
-#include <math.h>
-#include <algorithm>
 
+using std::string;
 
-class Number{
-
+class Number {
 public:
-
-    std::vector<long long> digits;
+	std::vector<long long> digits;
 	bool positive;
 
-	Number (std::string str) {
-		if(str[0] == '-'){
+	Number(std::string str) {
+		if (str[0] == '-') {
 			positive = false;
-			str = str.substr(1, str.size()-1);
+			str = str.substr(1, str.size() - 1);
 		} else {
 			positive = true;
 		}
-		digits.reserve(str.size()/18 + 1);
-		for(long i=str.size();i>0;i-=18)
+		digits.reserve(str.size() / 18 + 1);
+		for (long i = str.size(); i > 0; i -= 18)
 			digits.push_back(
-				stoll(str.substr(i>18 ? i-18 : 0, i>18 ? 18: i)));
+				stoll(str.substr(i > 18 ? i - 18 : 0, i > 18 ? 18 : i)));
 	}
 
-	Number (long long n) {
-		positive = n>0;
+	Number(long long n) {
+		positive = n > 0;
 		digits = {n};
 	}
 
-	Number& operator = (Number other) {
+	Number &operator=(Number other) {
 		digits = other.digits;
 		return *this;
 	}
 
-	Number operator + (Number other) {
+	Number operator+(Number other) {
 		Number tmp = *this;
 		tmp += other;
 		return tmp;
 	}
 
-    Number& operator += (Number other) {
-        size_t size = this->digits.size(), sizeOther = other.digits.size();
-        std::vector<long long> digits(std::max(size, sizeOther));
-        long long tmp, MAX = 1000000000000000000;
-        for(size_t i=0; i<size || i<sizeOther; ++i){
-            tmp = (i < size ? this->digits[i] : 0) + (i < sizeOther ? other.digits[i] : 0);
-            digits[i] += tmp;
-            if(digits[i] >= MAX){
-                if(i==digits.size())
-                    digits.resize(i+1);
-                digits[i+1] = 1;
-                digits[i] -= MAX;
-            }
-        }
-        this->digits = digits;
-        return *this;
-    }
+	Number &operator+=(Number other) {
+		size_t size = this->digits.size(), sizeOther = other.digits.size();
+		std::vector<long long> digits(std::max(size, sizeOther));
+		long long tmp, MAX = 1000000000000000000;
+		for (size_t i = 0; i < size || i < sizeOther; ++i) {
+			tmp = (i < size ? this->digits[i] : 0) +
+				(i < sizeOther ? other.digits[i] : 0);
+			digits[i] += tmp;
+			if (digits[i] >= MAX) {
+				if (i == digits.size())
+					digits.resize(i + 1);
+				digits[i + 1] = 1;
+				digits[i] -= MAX;
+			}
+		}
+		this->digits = digits;
+		return *this;
+	}
 
- 	Number operator - (Number other) {
+	Number operator-(Number other) {
 		Number tmp = *this;
 		tmp -= other;
 		return tmp;
 	}
 
-	Number& operator -= (Number other) {
+	Number &operator-=(Number other) {
 		size_t size = this->digits.size(), sizeOther = other.digits.size();
 		std::vector<long long> digits(std::max(size, sizeOther));
 		long long tmp;
-		for(size_t i=0; i<size||i<sizeOther; ++i){
-			tmp = (i<size ? this->digits[i] : 0) - (i<sizeOther ? other.digits[i] : 0);
+		for (size_t i = 0; i < size || i < sizeOther; ++i) {
+			tmp = (i < size ? this->digits[i] : 0) -
+				(i < sizeOther ? other.digits[i] : 0);
 			digits[i] += tmp;
-			if(digits[i] < 0){
-				digits[i+1] = -1;
+			if (digits[i] < 0) {
+				digits[i + 1] = -1;
 				digits[i] += 1000000000000000000;
 			}
 		}
@@ -83,35 +84,35 @@ public:
 		return *this;
 	}
 
-	Number operator * (Number other) {
+	Number operator*(Number other) {
 		Number tmp = *this;
 		tmp *= other;
 		return tmp;
 	}
 
-	Number& operator *= (Number other) {
+	Number &operator*=(Number other) {
 		using namespace std;
 		string multiplier = other.tostr();
 		reverse(multiplier.begin(), multiplier.end());
 		Number result = Number("0");
-		for(size_t i = 0; i<digits.size(); ++i) {
-			for(size_t j = 0; j<multiplier.size(); ++j){
+		for (size_t i = 0; i < digits.size(); ++i) {
+			for (size_t j = 0; j < multiplier.size(); ++j) {
 				result += Number(
-					to_string(digits[i] * stoll(multiplier.substr(j,1))) + string(i*18 + j, '0')
-				);
+					to_string(digits[i] * stoll(multiplier.substr(j, 1))) +
+					string(i * 18 + j, '0'));
 			}
 		}
 		digits = result.digits;
 		return *this;
 	}
 
-	Number operator / (Number other) {
+	Number operator/(Number other) {
 		Number tmp = *this;
 		tmp /= other;
 		return tmp;
 	}
 
-	Number& operator /= (Number other) {
+	Number &operator/=(Number other) {
 		// TODO;
 		return *this;
 	}
@@ -119,8 +120,8 @@ public:
 	Number power(long long other) {
 		Number cur = *this;
 		Number result = Number("1");
-		while (other){
-			if(other % 2)
+		while (other) {
+			if (other % 2)
 				result *= cur;
 			other /= 2;
 			cur *= cur;
@@ -136,41 +137,49 @@ public:
 		using namespace std;
 		auto it = digits.rbegin();
 		string str;
-		while(!*it) ++it;
-		for(str = to_string(*it++); it!=digits.rend(); ++it) {
+		while (!*it)
+			++it;
+		for (str = to_string(*it++); it != digits.rend(); ++it) {
 			string s = to_string(*it);
 			str += string(18 - s.size(), '0') + s;
 		}
 		return str;
 	}
 
-	friend std::ostream &operator << (std::ostream &out, Number number){
+	friend std::ostream &operator<<(std::ostream &out, Number number) {
 		std::cout << number.tostr();
 		return std::cout;
 	}
 
-	bool operator == (Number other){
-    	return tostr() == other.tostr();
+	bool operator==(Number other) {
+		return tostr() == other.tostr();
 	}
 
-	bool operator != (Number other){ return !(*this == other); }
+	bool operator!=(Number other) {
+		return !(*this == other);
+	}
 
-	bool operator < (Number other){
+	bool operator<(Number other) {
 		std::string s1 = tostr(), s2 = other.tostr();
 		int n = s1.size(), m = s2.size();
-		if(n != m)
+		if (n != m)
 			return n < m;
-		while(n--)
-			if(s1[n] != s2[n])
+		while (n--)
+			if (s1[n] != s2[n])
 				return s1[n] < s2[n];
 		return false;
 	}
 
-	bool operator > (Number other){ return other < *this; }
-	bool operator >= (Number other){ return !(*this < other); }
-	bool operator <= (Number other){ return !(*this > other); }
+	bool operator>(Number other) {
+		return other < *this;
+	}
+	bool operator>=(Number other) {
+		return !(*this < other);
+	}
+	bool operator<=(Number other) {
+		return !(*this > other);
+	}
 };
-
 
 /* TOKEN */
 
@@ -187,12 +196,13 @@ typedef enum {
 	TK_EOF,
 } TokenKind;
 
-
 struct Token {
-  operator bool()   { return true; }
-  TokenKind kind;
-  int idx;
-  std::string value;
+	operator bool() {
+		return true;
+	}
+	TokenKind kind;
+	int idx;
+	std::string value;
 };
 
 /* LEXER */
@@ -209,11 +219,11 @@ std::unordered_map<char, TokenKind> tokenMap = {
 
 void error(std::string err, int pos) {
 	using namespace std;
-	cout << input << endl << string( pos, ' ' ) + "^ " << err << endl;
+	cout << input << endl << string(pos, ' ') + "^ " << err << endl;
 	exit(0);
 }
 
-std::string match_numebr(std::string s) {
+std::string match_number(std::string s) {
 	using namespace std;
 	regex reg("\\d+(\\.+\\d+)*");
 	smatch match;
@@ -243,7 +253,7 @@ std::queue<Token> tokenize(std::string s) {
 				continue;
 			}
 			if (peek == '*') {
-				if(input[++idx]=='*'){
+				if (input[++idx] == '*') {
 					token.kind = TK_POWER;
 					tokens.push(token);
 					++idx;
@@ -254,218 +264,185 @@ std::queue<Token> tokenize(std::string s) {
 				continue;
 			}
 			if (isdigit(peek)) {
-				std::string value = match_numebr(input.substr(idx));
+				std::string value = match_number(input.substr(idx));
 				token.kind = TK_NUMBER;
 				token.value = value;
 				tokens.push(token);
 				idx += value.size();
 				continue;
 			}
-			error("º–∞O∏—™R•¢±—", idx);
+			error("Ê®ôË®òËß£ÊûêÂ§±Êïó", idx);
 			break;
 		}
-//
-//		Token token;
-//		token.kind = TK_EOF;
-//		tokens.push(token);
+		//
+		//		Token token;
+		//		token.kind = TK_EOF;
+		//		tokens.push(token);
 	}
 	return tokens;
+}
+
+string add(string a, string b) {
+	int len_a = a.size() - 1, len_b = b.size() - 1;
+
+	string result = "";
+	int carry = 0;
+	while (len_a >= 0 || len_b >= 0) {
+		int tmp = 0;
+		if (len_a >= 0)
+			tmp += a[len_a--] - '0';
+		if (len_b >= 0)
+			tmp += b[len_b--] - '0';
+		tmp += carry;
+
+		carry = tmp / 10;
+		result += '0' + tmp % 10;
+	}
+	if (carry > 0) {
+		result += '0' + carry;
+	}
+	reverse(result.begin(), result.end());
+	return result;
+}
+
+string minus(string a, string b) {
+	int len_a = a.size() - 1, len_b = b.size() - 1;
+
+	string result = "";
+	int carry = 0;
+	while (len_a >= 0 || len_b >= 0) {
+		int tmp = a[len_a--] - '0';
+
+		if (len_b >= 0)
+			tmp -= b[len_b--] - '0';
+
+		tmp -= carry;
+        if(tmp<0){
+            tmp += 10;
+            carry = 1;
+        }
+		result += '0' + tmp % 10;
+	}
+	reverse(result.begin(), result.end());
+	return result;
+}
+
+string multiply(string a, string b) {
+	return "";
+}
+
+string divide(string a, string b) {
+	return "";
+}
+
+string modulo(string a, string b) {
+	return "";
+}
+
+string power(string a, string b) {
+	return "";
 }
 
 /* PARSER */
 std::queue<Token> tokens;
 
-long long term();
-long long mul();
-long long expr();
-long long power();
+string term();
+string mul();
+string expr();
+string pow();
 
-long long power(){
-	long long a = term();
-	while(!tokens.empty()) {
+string pow() {
+	string a = term();
+	while (!tokens.empty()) {
 		Token token = tokens.front();
-		if (token.kind == TK_POWER){
+		if (token.kind == TK_POWER) {
 			tokens.pop();
-			long long b = term();
-			long long n = a;
-			while(--b)
-				a *= n;
-		}
-		else break;
+			string b = term();
+			string n = a;
+			a = power(a, b);
+		} else
+			break;
 	}
 	return a;
 }
 
-long long term() {
-	if(tokens.empty())
-        error("∫‚¶°•ºßπ¶®", input.size());
+string term() {
+	if (tokens.empty())
+		error("ÁÆóÂºèÊú™ÂÆåÊàê", input.size());
 	Token token = tokens.front();
 	if (token.kind == TK_LPAREN) {
 		tokens.pop();
-		long long result = expr();
+		string result = expr();
 		if (tokens.front().kind == TK_RPAREN)
 			tokens.pop();
 		else
-			error("¨A∏π§£¶®πÔ", token.idx);
+			error("Êã¨Ëôü‰∏çÊàêÂ∞ç", token.idx);
 		return result;
 	}
-	if (token.kind == TK_NUMBER){
+	if (token.kind == TK_NUMBER) {
 		tokens.pop();
-		return std::stoll(token.value);
+		return token.value;
 	} else
-	    error("§£¨Oº∆≠»", token.idx);
+		error("‰∏çÊòØÊï∏ÂÄº", token.idx);
 	return 0;
 }
 
-
-long long mul() {
-	long long a = power();
-	while(!tokens.empty()) {
+string mul() {
+	string a = pow();
+	while (!tokens.empty()) {
 		Token token = tokens.front();
-		if (token.kind == TK_MULTIPLY){
+		if (token.kind == TK_MULTIPLY) {
 			tokens.pop();
-			long long b = power();
-			a *= b;
-		}
-		else if (token.kind == TK_DIVIDE){
+			string b = pow();
+			a = multiply(a, b);
+		} else if (token.kind == TK_DIVIDE) {
 			tokens.pop();
-			long long b = power();
-			a /= b;
-		}
-        else if (token.kind == TK_MODULUS){
+			string b = pow();
+			a = divide(a, b);
+		} else if (token.kind == TK_MODULUS) {
 			tokens.pop();
-			long long b = power();
-			a %= b;
-		}
-		else break;	
+			string b = pow();
+			a = modulo(a, b);
+		} else
+			break;
 	}
 	return a;
 }
 
-long long expr() {
-	long long a = mul();
-	while(!tokens.empty()) {
+string expr() {
+	string a = mul();
+	while (!tokens.empty()) {
 		Token token = tokens.front();
 		if (token.kind == TK_PLUS) {
 			tokens.pop();
-			long long b = mul();
-			a += b;
-		}
-		else if (token.kind == TK_MINUS) {
+			string b = mul();
+			a = add(a, b);
+		} else if (token.kind == TK_MINUS) {
 			tokens.pop();
-			long long b = mul();
-			a -= b;
-		}
-		else if (token.kind == TK_LPAREN || token.kind == TK_RPAREN)
-			error("¨A∏π§£¶®πÔ", token.idx);
+			string b = mul();
+			a = minus(a, b);
+		} else if (token.kind == TK_LPAREN || token.kind == TK_RPAREN)
+			error("Êã¨Ëôü‰∏çÊàêÂ∞ç", token.idx);
 	}
 	return a;
 }
 
-
-long long parse() {
+string parse() {
 	/*
 	expr  = mul ( "+" | "-" ) mul
-	mul   = power ( "*" | "/" | "% ) power
-	power = term "**" term
+	mul   = pow ( "*" | "/" | "% ) pow
+	pow = term "**" term
 	term  = num | "(" expr ")"
 	*/
 	return expr();
-}
-
-// Number term();
-// Number mul();
-// Number expr();
-// Number power();
-
-// Number power(){
-// 	Number a = term();
-// 	while(!tokens.empty()) {
-// 		Token token = tokens.front();
-// 		if (token.kind == TK_POWER){
-// 			tokens.pop();
-// 			Number b = term();
-// 			a = a.power(b);
-// 		}
-// 		else break;
-// 	}
-// 	return a;
-// }
-
-// Number term() {
-// 	Token token = tokens.front();
-// 	if(tokens.empty())
-// 		error("∫‚¶°•ºßπ¶®", input.size());
-// 	if (token.kind == TK_LPAREN) {
-// 		tokens.pop();
-// 		Number result = expr();
-// 		if (tokens.front().kind == TK_RLPAREN)
-// 			tokens.pop();
-// 		else
-// 			error("¨A∏π§£¶®πÔ", token.idx);
-// 		return result;
-// 	}
-// 	if (token.kind == TK_NUMBER){
-// 		tokens.pop();
-// 		return Number(token.value);
-// 	}
-// 	error("§£¨Oº∆≠»", token.idx);
-// 	return 0;
-// }
-
-
-// Number mul() {
-// 	Number a = power();
-// 	while(!tokens.empty()) {
-// 		Token token = tokens.front();
-// 		if (token.kind == TK_MULTIPLY){
-// 			tokens.pop();
-// 			Number b = power();
-// 			a *= b;
-// 		}
-// 		else if (token.kind == TK_DIVIDE){
-// 			tokens.pop();
-// 			Number b = power();
-// 			a /= b;
-// 		}
-// 		else break;
-			
-// 	}
-// 	return a;
-// }
-
-// Number expr() {
-// 	Number a = mul();
-// 	while(!tokens.empty()) {
-// 		Token token = tokens.front();
-// 		if (token.kind == TK_PLUS){
-// 			tokens.pop();
-// 			Number b = mul();
-// 			a += b;
-// 		}
-// 		else if (token.kind == TK_MINUS){
-// 			tokens.pop();
-// 			Number b = mul();
-// 			a -= b;
-// 		}
-// 		else break;
-// 	}
-// 	return a;
-	
-// }
-
-
-// Number parse() {
-// 	return expr();
-// }
-
+}  
 
 /* MAIN */
 int main() {
 	using namespace std;
 	string content;
-	while(true){
-		cout << "øÈ§J∫‚¶°>> ";
+	while (true) {
+		cout << "Ëº∏ÂÖ•ÁÆóÂºè>> ";
 		getline(cin, content);
 		tokens = tokenize(content);
 		cout << parse() << std::endl;
