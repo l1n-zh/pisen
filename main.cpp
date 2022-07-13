@@ -282,6 +282,7 @@ std::queue<Token> tokenize(std::string s) {
 	return tokens;
 }
 
+
 string add(string a, string b) {
 	int len_a = a.size() - 1, len_b = b.size() - 1;
 
@@ -302,7 +303,9 @@ string add(string a, string b) {
 		result += '0' + carry;
 	}
 	reverse(result.begin(), result.end());
-	return result;
+	int i = 0;
+	while(result[i]=='0') ++i;
+	return result.substr(i);
 }
 
 string minus(string a, string b) {
@@ -320,15 +323,49 @@ string minus(string a, string b) {
         if(tmp<0){
             tmp += 10;
             carry = 1;
-        }
+        }else
+            carry = 0;
 		result += '0' + tmp % 10;
 	}
 	reverse(result.begin(), result.end());
-	return result;
+	int i = 0;
+	while(result[i]=='0') ++i;
+	return result.substr(i);
 }
 
 string multiply(string a, string b) {
-	return "";
+    if(a.size()<=9 && b.size()<=9) {
+        if(a.size()&&b.size()) {
+            return std::to_string(stoll(a)*stoll(b));
+        }
+        return "";
+    }
+
+    int sizeA = a.size();
+    int sizeB = b.size();
+
+    int half = std::max(sizeA, sizeB) / 2;
+    string e,f,g,h,n1,n2,n3;
+    if(sizeA-half < 0){
+        e = "0";
+        f = a;
+    }else{
+        e = a.substr(0,sizeA-half);
+        f = a.substr(sizeA-half);
+    }
+    if(sizeB-half < 0){
+        g = "0";
+        h = b;
+    }else{
+        g = b.substr(0,sizeB-half);
+        h = b.substr(sizeB-half);
+    }
+
+    n1 = multiply(e,g);
+    n2 = multiply(f,h);
+    n3 = multiply(add(e,f), add(g,h));
+    n3 = minus(n3,add(n1,n2));
+	return add(add(n1+string(2*half,'0'), n3+string(half,'0')), n2);
 }
 
 string divide(string a, string b) {
@@ -339,8 +376,17 @@ string modulo(string a, string b) {
 	return "";
 }
 
-string power(string a, string b) {
-	return "";
+string power(string a, string b){
+    string cur = a;
+    long long other = std::stoll(b);
+    string result = "1";
+    while (other) {
+        if (other % 2)
+            result = multiply(result,cur);
+        other /= 2;
+        cur = multiply(cur,cur);
+    }
+    return result;
 }
 
 /* PARSER */
