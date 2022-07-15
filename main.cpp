@@ -19,8 +19,7 @@ typedef enum {
   TK_POWER,
   TK_NUMBER,
   TK_LPAREN,
-  TK_RPAREN,
-  TK_EOF,
+  TK_RPAREN
 } TokenKind;
 
 struct Token {
